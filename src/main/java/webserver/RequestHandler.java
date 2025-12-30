@@ -1,9 +1,6 @@
 package webserver;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 
 import org.slf4j.Logger;
@@ -23,10 +20,28 @@ public class RequestHandler implements Runnable {
                 connection.getPort());
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
+            // HttpRequest 파서를 통해 요청 분석
+            HttpRequest request = new HttpRequest(in);
+            String path = request.getPath();
+
+            // 루트 리다이렉트
+            if (path.equals("/")) {
+                path = "/index.html";
+            }
+
+            // 파일 객체 생성
+            File file = new File("src/main/resources/static" + path);
             DataOutputStream dos = new DataOutputStream(out);
-            byte[] body = "<h1>Hello World</h1>".getBytes();
-            response200Header(dos, body.length);
-            responseBody(dos, body);
+
+            if (file.exists() && !file.isDirectory()) {
+                // 스트림으로 파일 읽기
+                byte[] body = readAllBytes(file);
+
+                response200Header(dos, body.length);
+                responseBody(dos, body);
+            } else {
+                response404Header(dos);
+            }
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
@@ -63,5 +78,21 @@ public class RequestHandler implements Runnable {
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
+    }
+
+    private byte[] readAllBytes(File file) throws IOException {
+        int length = (int) file.length();
+        byte[] body = new byte[length];
+
+        try (FileInputStream fis = new FileInputStream(file)) {
+            int offset = 0; // 현재 배열의 어디까지 채웠는지 나타내는 인덱스
+            int numRead = 0; // 이번에 스트림에서 실제로 읽어온 바이트 수
+
+            // 파일을 바이트 단위로 끝까지 읽어 배열에 채움
+            while (offset < body.length && (numRead = fis.read(body, offset, body.length - offset)) >= 0) {
+                offset += numRead;
+            }
+        }
+        return body;
     }
 }
