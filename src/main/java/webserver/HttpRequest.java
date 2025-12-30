@@ -1,5 +1,8 @@
 package webserver;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,6 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HttpRequest {
+    private static final Logger logger = LoggerFactory.getLogger(HttpRequest.class);
+
     private String method;
     private String path;
     private Map<String, String> headers = new HashMap<>();
@@ -22,11 +27,21 @@ public class HttpRequest {
 
         // Request Line 파싱
         parseRequestLine(line);
+        logger.debug("Method: {}, Path: {}", method, path);
 
-        // Header 파싱
-        while (!((line = br.readLine()).getBytes().length == 0) || line.isEmpty()) {
-            if (line.isEmpty()) break;
+        // 헤더 파싱
+        while (true) {
+            line = br.readLine();
+            if (line == null || line.isEmpty()) {
+                break;
+            }
             parseHeader(line);
+            logger.debug("Header: {}", line);
+        }
+
+        // 쿼리 파라미터 로그
+        if (!params.isEmpty()) {
+            logger.debug("Query Parameters: {}", params);
         }
     }
 
@@ -62,8 +77,19 @@ public class HttpRequest {
     }
 
     // Getter
-    public String getMethod() { return method; }
-    public String getPath() { return path; }
-    public String getHeader(String name) { return headers.get(name); }
-    public String getParameter(String name) { return params.get(name); }
+    public String getMethod() {
+        return method;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public String getHeader(String name) {
+        return headers.get(name);
+    }
+
+    public String getParameter(String name) {
+        return params.get(name);
+    }
 }
