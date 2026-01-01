@@ -34,10 +34,13 @@ public class RequestHandler implements Runnable {
             DataOutputStream dos = new DataOutputStream(out);
 
             if (file.exists() && !file.isDirectory()) {
-                // 스트림으로 파일 읽기
                 byte[] body = readAllBytes(file);
 
-                response200Header(dos, body.length);
+                // 확장자를 파악하여 적절한 컨텐츠 타입을 결정
+                String contentType = getContentType(path);
+
+                // 헤더에 contentType 전달
+                response200Header(dos, body.length, contentType);
                 responseBody(dos, body);
             } else {
                 response404Header(dos);
@@ -47,11 +50,12 @@ public class RequestHandler implements Runnable {
         }
     }
 
-    private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
+    private void response200Header(DataOutputStream dos, int length, String contentType) {
         try {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
-            dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
-            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            // 전달받은 contentType을 설정
+            dos.writeBytes("Content-Type: " + contentType + ";charset=utf-8\r\n");
+            dos.writeBytes("Content-Length: " + length + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             logger.error(e.getMessage());
@@ -94,5 +98,18 @@ public class RequestHandler implements Runnable {
             }
         }
         return body;
+    }
+
+    // 확장자별 MIME 타입을 반환하는 메서드
+    private String getContentType(String path) {
+        if (path.endsWith(".css")) return "text/css";
+        if (path.endsWith(".js")) return "application/javascript";
+        if (path.endsWith(".ico")) return "image/x-icon";
+        if (path.endsWith(".png")) return "image/png";
+        if (path.endsWith(".jpg") || path.endsWith(".jpeg")) return "image/jpeg";
+        if (path.endsWith(".svg")) return "image/svg+xml";
+
+        // 기본값은 html
+        return "text/html";
     }
 }
