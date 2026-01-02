@@ -23,7 +23,10 @@ public class HttpRequest {
         BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
         String line = br.readLine();
 
-        if (line == null) return;
+        // 빈 요청인 경우 예외를 던져서 이후 로직이 실행되지 않게 함
+        if (line == null || line.trim().isEmpty()) {
+            throw new IOException("Empty HTTP Request Line");
+        }
 
         // Request Line 파싱
         parseRequestLine(line);
@@ -48,6 +51,8 @@ public class HttpRequest {
     // 전체 요청 파싱 메서드
     private void parseRequestLine(String line) {
         String[] tokens = line.split(" ");
+        if (tokens.length < 2) return; // 최소한 Method와 Path는 있어야 함
+
         this.method = tokens[0];
         this.path = tokens[1];
 
