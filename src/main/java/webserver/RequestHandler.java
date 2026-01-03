@@ -20,31 +20,46 @@ public class RequestHandler implements Runnable {
                 connection.getPort());
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
-            // HttpRequest 파서를 통해 요청 분석
             HttpRequest request = new HttpRequest(in);
-            String path = request.getPath();
 
-            // 루트 리다이렉트
-            if (path.equals("/")) {
-                path = "/index.html";
+            // HttpRequest에서 가져온 직후 바로 trim() 적용
+            String path = request.getPath();
+            if (path != null) {
+                path = path.trim();
             }
 
             DataOutputStream dos = new DataOutputStream(out);
 
-            // 핵심 수정: File 객체 대신 ClassLoader를 통해 리소스를 스트림으로 가져옴
+            // 경로가 "/" 로 시작하지 않는 경우 처리
+            if (path == null || path.isEmpty()) path = "/";
+
+            // 1순위: 요청한 경로 그대로 찾아보기 (파일인 경우)
             String resourcePath = "/static" + path;
-            try (InputStream is = getClass().getResourceAsStream(resourcePath)) {
+            InputStream is = getClass().getResourceAsStream(resourcePath);
 
-                if (is != null) {
-                    // InputStream에서 바이트 배열을 읽어옴
+            // 2순위: 1순위에서 못 찾았거나, 디렉토리 요청인 경우 (Welcome File 탐색)
+            if (is == null || !isFileRequest(path)) {
+                String welcomePath = path.endsWith("/") ? path + "index.html" : path + "/index.html";
+                InputStream welcomeIs = getClass().getResourceAsStream("/static" + welcomePath);
+
+                if (welcomeIs != null) {
+                    // 기존 열려있던 is가 있다면 닫고 교체 (is가 null이 아닐 수도 있으므로)
+                    if (is != null) is.close();
+                    is = welcomeIs;
+                    path = welcomePath; // Content-Type 결정을 위해 path 업데이트
+                }
+            }
+
+            // 최종 결과 응답
+            if (is != null) {
+                try (InputStream ignored = is) { // 자동 자원 반납
                     byte[] body = readAllBytesFromStream(is);
-
                     String contentType = getContentType(path);
                     response200Header(dos, body.length, contentType);
                     responseBody(dos, body);
-                } else {
-                    response404Header(dos);
                 }
+            } else {
+                response404Header(dos);
             }
         } catch (IOException e) {
             logger.error(e.getMessage());
@@ -108,5 +123,12 @@ public class RequestHandler implements Runnable {
 
         // 기본값은 html
         return "text/html";
+    }
+
+    // 파일 요청인지 확인하는 유틸리티 (톰캣의 DefaultServlet 판단 로직 모방)
+    private boolean isFileRequest(String path) {
+        int lastSlashIndex = path.lastIndexOf('/');
+        int lastDotIndex = path.lastIndexOf('.');
+        return lastDotIndex > lastSlashIndex;
     }
 }
