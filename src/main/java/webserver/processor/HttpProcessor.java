@@ -1,5 +1,7 @@
 package webserver.processor;
 
+import db.Database;
+import model.User;
 import webserver.model.HttpRequest;
 import webserver.model.HttpResponse;
 import org.slf4j.Logger;
@@ -19,15 +21,30 @@ public class HttpProcessor {
         if (path == null) path = "";
         path = path.trim();
 
+        // 0. 동적 요청 처리 (회원가입)
+        if (path.startsWith("/user/create")) {
+            User user = new User(
+                    request.getParameter("userId"),
+                    request.getParameter("password"),
+                    request.getParameter("name"),
+                    request.getParameter("email")
+            );
+            Database.addUser(user);
+            logger.debug("User Created : {}", user);
+            
+            response.sendRedirect("/index.html");
+            return response;
+        }
+
         if (path.isEmpty() || path.equals("/")) {
             path = "/index.html";
         }
 
-        // 1. Static Resource Handling
+        // 1. 정적 리소스 처리
         String resourcePath = "/static" + path;
         InputStream is = getClass().getResourceAsStream(resourcePath);
 
-        // 2. Welcome File Handling (if not found or directory request)
+        // 2. 웰컴 파일 처리 (파일을 찾지 못했거나 디렉토리 요청인 경우)
         if (is == null || !request.isFileRequest()) {
             String welcomePath = path.endsWith("/") ? path + "index.html" : path + "/index.html";
             InputStream welcomeIs = getClass().getResourceAsStream("/static" + welcomePath);
