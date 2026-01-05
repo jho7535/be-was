@@ -2,6 +2,7 @@ package webserver.parser;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import webserver.model.HttpMethod;
 import webserver.model.HttpRequest;
 
 import java.io.BufferedReader;
@@ -31,7 +32,7 @@ public class HttpParser {
              throw new IOException("Invalid HTTP Request Line: " + line);
         }
         
-        String method = tokens[0];
+        HttpMethod method = HttpMethod.valueOf(tokens[0]);
         String fullPath = tokens[1];
         String version = (tokens.length > 2) ? tokens[2] : "HTTP/1.1";
 
