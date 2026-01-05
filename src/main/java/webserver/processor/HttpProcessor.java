@@ -2,12 +2,13 @@ package webserver.processor;
 
 import db.Database;
 import model.User;
+import webserver.model.ContentType;
 import webserver.model.HttpRequest;
 import webserver.model.HttpResponse;
+import webserver.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -15,13 +16,23 @@ public class HttpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(HttpProcessor.class);
 
     public HttpResponse process(HttpRequest request) {
+        switch (request.method()) {
+            case GET:
+                return doGet(request);
+            case POST:
+                return doPost(request);
+            default:
+                HttpResponse response = new HttpResponse();
+                response.setStatus(405, "Method Not Allowed");
+                response.setBody("<h1>405 Method Not Allowed</h1>".getBytes());
+                return response;
+        }
+    }
+
+    private HttpResponse doPost(HttpRequest request) {
         HttpResponse response = new HttpResponse();
         String path = request.path();
 
-        if (path == null) path = "";
-        path = path.trim();
-
-        // 0. 동적 요청 처리 (회원가입)
         if (path.startsWith("/user/create")) {
             User user = new User(
                     request.getParameter("userId"),
@@ -31,10 +42,22 @@ public class HttpProcessor {
             );
             Database.addUser(user);
             logger.debug("User Created : {}", user);
-            
+
             response.sendRedirect("/index.html");
             return response;
         }
+
+        response.setStatus(404, "Not Found");
+        response.setBody("<h1>404 Not Found</h1>".getBytes());
+        return response;
+    }
+
+    private HttpResponse doGet(HttpRequest request) {
+        HttpResponse response = new HttpResponse();
+        String path = request.path();
+
+        if (path == null) path = "";
+        path = path.trim();
 
         if (path.isEmpty() || path.equals("/")) {
             path = "/index.html";
@@ -50,7 +73,10 @@ public class HttpProcessor {
             InputStream welcomeIs = getClass().getResourceAsStream("/static" + welcomePath);
             if (welcomeIs != null) {
                 if (is != null) {
-                    try { is.close(); } catch (IOException ignored) {}
+                    try {
+                        is.close();
+                    } catch (IOException ignored) {
+                    }
                 }
                 is = welcomeIs;
                 path = welcomePath;
@@ -59,9 +85,9 @@ public class HttpProcessor {
 
         if (is != null) {
             try (InputStream ignored = is) {
-                byte[] body = readAllBytes(is);
+                byte[] body = IOUtils.readAllBytes(is);
                 response.setStatus(200, "OK");
-                response.setContentType(getContentType(path));
+                response.setContentType(ContentType.from(path).getMimeType());
                 response.setBody(body);
             } catch (IOException e) {
                 logger.error("Error reading static resource", e);
@@ -73,25 +99,5 @@ public class HttpProcessor {
         }
 
         return response;
-    }
-
-    private byte[] readAllBytes(InputStream is) throws IOException {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        byte[] data = new byte[4096];
-        int nRead;
-        while ((nRead = is.read(data, 0, data.length)) != -1) {
-            buffer.write(data, 0, nRead);
-        }
-        return buffer.toByteArray();
-    }
-
-    private String getContentType(String path) {
-        if (path.endsWith(".css")) return "text/css";
-        if (path.endsWith(".js")) return "application/javascript";
-        if (path.endsWith(".ico")) return "image/x-icon";
-        if (path.endsWith(".png")) return "image/png";
-        if (path.endsWith(".jpg") || path.endsWith(".jpeg")) return "image/jpeg";
-        if (path.endsWith(".svg")) return "image/svg+xml";
-        return "text/html";
     }
 }
