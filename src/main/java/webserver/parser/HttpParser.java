@@ -57,6 +57,23 @@ public class HttpParser {
             parseHeader(line, headers);
         }
 
+        // Body Parsing
+        if (headers.containsKey("Content-Length") || headers.containsKey("Transfer-Encoding")) {
+            String contentLengthValue = headers.get("Content-Length");
+            if (contentLengthValue != null) {
+                int contentLength = Integer.parseInt(contentLengthValue);
+                char[] bodyChars = new char[contentLength];
+                br.read(bodyChars, 0, contentLength);
+                String body = new String(bodyChars);
+                
+                if (!body.isEmpty()) {
+                    params.putAll(parseQueryString(body));
+                }
+            } else {
+                logger.warn("Transfer-Encoding detected without Content-Length. Chunked encoding not yet fully supported.");
+            }
+        }
+
         logger.debug("Method: {}, Path: {}, Version: {}", method, path, version);
         if (!params.isEmpty()) {
             logger.debug("Query Parameters: {}", params);
