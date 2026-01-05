@@ -3,7 +3,7 @@ package webserver.model;
 import java.util.Map;
 
 public record HttpRequest(
-        String method,
+        HttpMethod method,
         String path,
         String version,
         Map<String, String> headers,
