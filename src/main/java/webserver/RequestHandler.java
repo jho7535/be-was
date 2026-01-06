@@ -7,8 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import webserver.model.HttpRequest;
 import webserver.model.HttpResponse;
-import webserver.parser.RequestParser;
-import webserver.parser.ResponseWriter;
+import webserver.http.RequestParser;
+import webserver.http.ResponseWriter;
 import webserver.processor.HttpProcessor;
 
 public class RequestHandler implements Runnable {
