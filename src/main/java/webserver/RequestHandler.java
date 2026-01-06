@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import webserver.model.HttpRequest;
 import webserver.model.HttpResponse;
-import webserver.parser.HttpParser;
+import webserver.parser.RequestParser;
 import webserver.parser.ResponseWriter;
 import webserver.processor.HttpProcessor;
 
@@ -26,7 +26,7 @@ public class RequestHandler implements Runnable {
                 connection.getPort());
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
-            HttpRequest request = HttpParser.parse(in);
+            HttpRequest request = RequestParser.parse(in);
             
             HttpResponse response = processor.process(request);
 

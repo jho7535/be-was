@@ -13,8 +13,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HttpParser {
-    private static final Logger logger = LoggerFactory.getLogger(HttpParser.class);
+public class RequestParser {
+    private static final Logger logger = LoggerFactory.getLogger(RequestParser.class);
 
     public static HttpRequest parse(InputStream in) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
