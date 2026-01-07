@@ -96,6 +96,7 @@ public class RequestParser {
             String body = new String(bodyChars);
 
             if (!body.isEmpty()) {
+                logger.debug("Request Body: {}", body); // 원본 바디 데이터 로깅
                 bodyParams = parseQueryString(body);
             }
         } else if (headers.containsKey("Transfer-Encoding")) {
@@ -132,5 +133,6 @@ public class RequestParser {
     }
 
     // 내부 데이터 전달용 객체
-    private record RequestLine(HttpMethod method, String path, String version, Map<String, String> queryParams) {}
+    private record RequestLine(HttpMethod method, String path, String version, Map<String, String> queryParams) {
+    }
 }
