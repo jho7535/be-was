@@ -7,11 +7,13 @@ public record HttpRequest(
         String path,
         String version,
         Map<String, String> headers,
-        Map<String, String> params
+        Map<String, String> params,
+        Map<String, String> cookies
 ) {
     public HttpRequest {
         headers = Map.copyOf(headers);
         params = Map.copyOf(params);
+        cookies = (cookies != null) ? Map.copyOf(cookies) : Map.of();
     }
 
     public String getHeader(String name) {
@@ -27,5 +29,13 @@ public record HttpRequest(
         int lastSlashIndex = path.lastIndexOf('/');
         int lastDotIndex = path.lastIndexOf('.');
         return lastDotIndex > lastSlashIndex;
+    }
+
+    public String getSessionId() {
+        return cookies.get("sid");
+    }
+
+    public String getCookie(String name) {
+        return cookies.get(name);
     }
 }
