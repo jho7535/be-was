@@ -57,6 +57,9 @@ public class RequestParser {
             parseHeader(line, headers);
         }
 
+        String cookieHeader = headers.get("Cookie");
+        Map<String, String> cookies = parseCookies(cookieHeader);
+
         // Body Parsing
         if (headers.containsKey("Content-Length") || headers.containsKey("Transfer-Encoding")) {
             String contentLengthValue = headers.get("Content-Length");
@@ -80,7 +83,7 @@ public class RequestParser {
         }
         headers.forEach((key, value) -> logger.debug("Header: {}: {}", key, value));
 
-        return new HttpRequest(method, path, version, headers, params);
+        return new HttpRequest(method, path, version, headers, params, cookies);
     }
 
     private static void parseHeader(String line, Map<String, String> headers) {
@@ -101,4 +104,21 @@ public class RequestParser {
         }
         return params;
     }
+
+    private static Map<String, String> parseCookies(String cookieHeader) {
+        Map<String, String> cookies = new HashMap<>();
+        if (cookieHeader == null || cookieHeader.isEmpty()) {
+            return cookies;
+        }
+
+        String[] pairs = cookieHeader.split(";");
+        for (String pair : pairs) {
+            String[] tokens = pair.trim().split("=");
+            if (tokens.length == 2) {
+                cookies.put(tokens[0], tokens[1]);
+            }
+        }
+        return cookies;
+    }
+
 }
