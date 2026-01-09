@@ -1,5 +1,6 @@
 package webserver.servlet;
 
+import webserver.servlet.impl.HomeServlet;
 import webserver.servlet.impl.UserCreateServlet;
 import webserver.servlet.impl.UserLoginServlet;
 import webserver.servlet.impl.UserLogoutServlet;
@@ -11,6 +12,9 @@ public class RequestMapping {
     private static final Map<String, HttpServlet> controllers = new HashMap<>();
 
     static {
+        controllers.put("/", new HomeServlet());
+        controllers.put("/index.html", new HomeServlet());
+
         controllers.put("/user/create", new UserCreateServlet());
         controllers.put("/user/login", new UserLoginServlet());
         controllers.put("/user/logout", new UserLogoutServlet());
