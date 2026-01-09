@@ -6,12 +6,13 @@ import webserver.SessionManager;
 import webserver.model.HttpRequest;
 import webserver.model.HttpResponse;
 import webserver.model.HttpSession;
+import webserver.model.ModelAndView;
 import webserver.servlet.HttpServlet;
 
 public class UserLoginServlet extends HttpServlet {
 
     @Override
-    protected void doPost(HttpRequest request, HttpResponse response) {
+    protected ModelAndView doPost(HttpRequest request, HttpResponse response) {
         // 파라미터에서 로그인 정보 추출
         String userId = request.getParameter("userId");
         String password = request.getParameter("password");
@@ -30,10 +31,11 @@ public class UserLoginServlet extends HttpServlet {
 
             // 로그인 성공 시 index.html로 이동
             response.sendRedirect("/index.html");
-            return;
+            return null;
         }
 
         // 로그인이 실패하면 다시 로그인 화면으로 이동
         response.sendRedirect("/login/index.html");
+        return null;
     }
 }

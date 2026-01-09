@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import webserver.model.ContentType;
 import webserver.model.HttpRequest;
 import webserver.model.HttpResponse;
+import webserver.model.ModelAndView;
 import webserver.servlet.HttpServlet;
 import webserver.util.IOUtils;
 
@@ -15,7 +16,7 @@ public class ResourceServlet extends HttpServlet {
     private static final Logger logger = LoggerFactory.getLogger(ResourceServlet.class);
 
     @Override
-    protected void doGet(HttpRequest request, HttpResponse response) {
+    protected ModelAndView doGet(HttpRequest request, HttpResponse response) {
         String path = request.path();
 
         if (path == null) path = "";
@@ -59,5 +60,7 @@ public class ResourceServlet extends HttpServlet {
             response.setStatus(404, "Not Found");
             response.setBody("<h1>404 Not Found</h1>".getBytes());
         }
+
+        return null;
     }
 }
