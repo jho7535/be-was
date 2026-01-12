@@ -16,18 +16,15 @@ public class ResourceHandler {
         InputStream is = getClass().getResourceAsStream(resourcePath);
 
         if (is == null) {
-            response.setStatus(404, "Not Found");
-            response.setBody("<h1>404 Not Found</h1>".getBytes());
+            response.notFound();
             return;
         }
 
         try (is) {
             byte[] body = IOUtils.readAllBytes(is);
-            response.setStatus(200, "OK");
-            response.setContentType(ContentType.from(path).getMimeType());
-            response.setBody(body);
+            response.ok(body, ContentType.from(path).getMimeType());
         } catch (Exception e) {
-            response.setStatus(500, "Internal Server Error");
+            response.internalServerError();
         }
     }
 }
