@@ -4,32 +4,55 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import webserver.model.HttpRequest;
 import webserver.model.HttpResponse;
+import webserver.model.ModelAndView;
 import webserver.servlet.HttpServlet;
 import webserver.servlet.RequestMapping;
-import webserver.servlet.impl.ResourceServlet;
+import webserver.view.View;
+import webserver.view.ViewResolver;
 
 
 public class DispatcherServlet {
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
-    private final HttpServlet resourceServlet = new ResourceServlet();
+    private final ViewResolver viewResolver = new ViewResolver();
 
-    public HttpResponse dispatch(HttpRequest request) {
-        HttpResponse response = new HttpResponse();
-        
+    public void dispatch(HttpRequest request, HttpResponse response) {
         HttpServlet servlet = RequestMapping.getServlet(request.path());
-        
+
         if (servlet == null) {
-            servlet = resourceServlet;
+            logger.warn("No mapping found for path: {}", request.path());
+            response.notFound();
+            return;
         }
 
         try {
-            servlet.service(request, response);
+            ModelAndView mav = servlet.service(request, response);
+            processResponse(mav, response);
         } catch (Exception e) {
             logger.error("Error processing request: {}", request.path(), e);
-            response.setStatus(500, "Internal Server Error");
-            response.setBody("<h1>500 Internal Server Error</h1>".getBytes());
+            response.internalServerError();
+        }
+    }
+
+    private void processResponse(ModelAndView mav, HttpResponse response) throws Exception {
+        // 케이스 1: ModelAndView가 없는 경우
+        if (mav == null) {
+            return;
         }
 
-        return response;
+        String viewName = mav.getViewName();
+
+        // 케이스 2: 리다이렉트 처리
+        if (viewName.startsWith("redirect:")) {
+            response.sendRedirect(viewName.substring("redirect:".length()));
+            return;
+        }
+
+        // 케이스 3: 동적 뷰 렌더링 (ViewResolver 호출)
+        View view = viewResolver.resolve(viewName);
+
+        // View에게 렌더링 위임
+        if (view != null) {
+            view.render(mav.getModel(), response);
+        }
     }
 }
