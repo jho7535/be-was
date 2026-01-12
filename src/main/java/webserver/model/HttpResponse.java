@@ -60,4 +60,29 @@ public class HttpResponse {
     public String getVersion() {
         return version;
     }
+
+    public void sendError(int statusCode, String message) {
+        this.setStatus(statusCode, message);
+        this.setContentType("text/html;charset=utf-8");
+
+        String errorPage = String.format(
+                "<html><body><h1>%d %s</h1><p>에러 발생</p></body></html>",
+                statusCode, message
+        );
+        this.setBody(errorPage.getBytes());
+    }
+
+    public void ok(byte[] body, String contentType) {
+        this.setStatus(200, "OK");
+        this.setContentType(contentType);
+        this.setBody(body);
+    }
+
+    public void notFound() {
+        sendError(404, "Not Found");
+    }
+
+    public void internalServerError() {
+        sendError(500, "Internal Server Error");
+    }
 }
