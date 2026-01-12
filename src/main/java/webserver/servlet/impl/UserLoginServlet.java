@@ -30,12 +30,10 @@ public class UserLoginServlet extends HttpServlet {
             response.addHeader("Set-Cookie", "sid=" + session.getId() + "; Path=/");
 
             // 로그인 성공 시 index.html로 이동
-            response.sendRedirect("/index.html");
-            return null;
+            return new ModelAndView("redirect:/index.html");
         }
 
         // 로그인이 실패하면 다시 로그인 화면으로 이동
-        response.sendRedirect("/login/index.html");
-        return null;
+        return new ModelAndView("redirect:/login/index.html");
     }
 }

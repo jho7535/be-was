@@ -23,8 +23,6 @@ public class UserCreateServlet extends HttpServlet {
         Database.addUser(user);
         logger.debug("User Created : {}", user);
 
-        response.sendRedirect("/index.html");
-
-        return null;
+        return new ModelAndView("redirect:/index.html");
     }
 }
