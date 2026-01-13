@@ -28,6 +28,7 @@ public class DatabaseInitializer {
                     "writerId VARCHAR(255) NOT NULL, " + // 작성자 확인용
                     "content TEXT NOT NULL, " +          // 글 본문
                     "imagePath VARCHAR(500), " +         // 업로드한 이미지 경로
+                    "likeCount INT DEFAULT 0, " +
                     "createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
                     "CONSTRAINT fk_writer FOREIGN KEY (writerId) REFERENCES users(userId) " +
                     "ON DELETE CASCADE ON UPDATE CASCADE)";
