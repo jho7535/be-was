@@ -1,7 +1,7 @@
 package webserver.servlet.impl;
 
-import db.Database;
 import model.User;
+import repository.UserRepository;
 import webserver.SessionManager;
 import webserver.model.HttpRequest;
 import webserver.model.HttpResponse;
@@ -18,7 +18,7 @@ public class UserLoginServlet extends HttpServlet {
         String password = request.getParameter("password");
 
         // 메모리 DB(DataBase.addUser로 저장된 데이터)에서 유저 조회
-        User user = Database.findUserById(userId);
+        User user = UserRepository.getInstance().findById(userId);
 
         // 유저가 존재하고 비밀번호가 일치하는지 확인
         if (user != null && user.getPassword().equals(password)) {
@@ -30,10 +30,10 @@ public class UserLoginServlet extends HttpServlet {
             response.addHeader("Set-Cookie", "sid=" + session.getId() + "; Path=/");
 
             // 로그인 성공 시 index.html로 이동
-            return new ModelAndView("redirect:/index.html");
+            return new ModelAndView("redirect:/");
         }
 
         // 로그인이 실패하면 다시 로그인 화면으로 이동
-        return new ModelAndView("redirect:/login/index.html");
+        return new ModelAndView("redirect:/login");
     }
 }

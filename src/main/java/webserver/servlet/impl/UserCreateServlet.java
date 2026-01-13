@@ -1,9 +1,9 @@
 package webserver.servlet.impl;
 
-import db.Database;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.UserRepository;
 import webserver.model.HttpRequest;
 import webserver.model.HttpResponse;
 import webserver.model.ModelAndView;
@@ -20,9 +20,9 @@ public class UserCreateServlet extends HttpServlet {
                 request.getParameter("name"),
                 request.getParameter("email")
         );
-        Database.addUser(user);
+        UserRepository.getInstance().save(user);
         logger.debug("User Created : {}", user);
 
-        return new ModelAndView("redirect:/index.html");
+        return new ModelAndView("redirect:/");
     }
 }

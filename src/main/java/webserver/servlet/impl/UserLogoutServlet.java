@@ -23,6 +23,6 @@ public class UserLogoutServlet extends HttpServlet {
         response.addHeader("Set-Cookie", "sid=" + sessionId + "; Path=/; Max-Age=0");
 
         // 로그아웃 후 메인 페이지로 리다이렉트
-        return new ModelAndView("redirect:/index.html");
+        return new ModelAndView("redirect:/");
     }
 }
