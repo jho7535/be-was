@@ -14,10 +14,13 @@ public class RequestMapping {
 
         controllers.put("/login", new LoginPageServlet());
         controllers.put("/registration", new RegistrationPageServlet());
+        controllers.put("/article", new ArticlePageServlet());
 
         controllers.put("/user/create", new UserCreateServlet());
         controllers.put("/user/login", new UserLoginServlet());
         controllers.put("/user/logout", new UserLogoutServlet());
+
+        controllers.put("/article/create", new ArticleCreateServlet());
     }
 
     public static HttpServlet getServlet(String path) {
