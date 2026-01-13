@@ -5,6 +5,7 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import db.DatabaseInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +21,9 @@ public class WebServer {
         } else {
             port = Integer.parseInt(args[0]);
         }
+
+        // DB 초기화
+        DatabaseInitializer.initTable();
 
         // 스레드 풀 생성
         ExecutorService executorService = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
