@@ -2,12 +2,16 @@ package repository;
 
 import db.ConnectionManager;
 import model.User;
+
 import java.sql.*;
 
 public class UserRepository {
 
     private static final UserRepository instance = new UserRepository();
-    private UserRepository() {}
+
+    private UserRepository() {
+    }
+
     public static UserRepository getInstance() {
         return instance;
     }
