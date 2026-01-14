@@ -2,6 +2,7 @@ package webserver;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import webserver.filter.LoginCheckFilter;
 import webserver.model.HttpRequest;
 import webserver.model.HttpResponse;
 import webserver.model.ModelAndView;
@@ -14,8 +15,13 @@ import webserver.view.ViewResolver;
 public class DispatcherServlet {
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
     private final ViewResolver viewResolver = new ViewResolver();
+    private final LoginCheckFilter loginFilter = new LoginCheckFilter();
 
     public void dispatch(HttpRequest request, HttpResponse response) {
+        if (!loginFilter.doFilter(request, response)) {
+            return;
+        }
+
         HttpServlet servlet = RequestMapping.getServlet(request.path());
 
         if (servlet == null) {
