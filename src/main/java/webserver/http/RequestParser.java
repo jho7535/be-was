@@ -5,10 +5,7 @@ import org.slf4j.LoggerFactory;
 import webserver.model.HttpMethod;
 import webserver.model.HttpRequest;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,50 +14,62 @@ public class RequestParser {
     private static final Logger logger = LoggerFactory.getLogger(RequestParser.class);
 
     public static HttpRequest parse(InputStream in) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-        String line = br.readLine();
-
-        if (line == null || line.trim().isEmpty()) {
+        // 1. 요청 라인 읽기 (바이트 단위 한 줄 읽기)
+        String requestLineStr = readLine(in);
+        if (requestLineStr == null || requestLineStr.isEmpty()) {
             throw new IOException("Empty HTTP Request Line");
         }
+        RequestLine requestLine = parseRequestLine(requestLineStr);
 
-        logger.debug("Request Line: {}", line);
-
-        // 1. 요청 라인 파싱
-        RequestLine requestLine = parseRequestLine(line);
-
-        // 2. 헤더 파싱
-        Map<String, String> headers = parseHeaders(br);
+        // 2. 헤더 읽기 (빈 줄이 나올 때까지 한 줄씩 읽기)
+        Map<String, String> headers = new HashMap<>();
+        String headerLine;
+        while (!(headerLine = readLine(in)).isEmpty()) {
+            String[] pair = headerLine.split(": ");
+            if (pair.length >= 2) headers.put(pair[0], pair[1]);
+        }
 
         // 3. 쿠키 파싱
         Map<String, String> cookies = parseCookies(headers.get("Cookie"));
 
-        // 4. 바디 파싱 및 파라미터 병합
+        // 4. 바디 읽기 (Content-Length만큼의 바이너리 데이터)
+        byte[] body = new byte[0];
         Map<String, String> params = new HashMap<>(requestLine.queryParams);
-        params.putAll(parseBody(br, headers));
 
-        logger.debug("Method: {}, Path: {}, Version: {}", requestLine.method, requestLine.path, requestLine.version);
-        if (!params.isEmpty()) {
-            logger.debug("Query Parameters: {}", params);
+        if (headers.containsKey("Content-Length")) {
+            int contentLength = Integer.parseInt(headers.get("Content-Length"));
+            // ★ 핵심: InputStream에서 정확히 길이만큼 바이트를 읽어옴
+            body = in.readNBytes(contentLength);
+
+            // 일반 Form 데이터일 경우만 파라미터 맵에 추가
+            String contentType = headers.get("Content-Type");
+            if (contentType != null && contentType.contains("application/x-www-form-urlencoded")) {
+                params.putAll(parseQueryString(new String(body, StandardCharsets.UTF_8)));
+            }
         }
-        headers.forEach((key, value) -> logger.debug("Header: {}: {}", key, value));
 
-        return new HttpRequest(requestLine.method, requestLine.path, requestLine.version, headers, params, cookies);
+        return new HttpRequest(requestLine.method, requestLine.path, requestLine.version, headers, params, cookies, body);
     }
 
-    private static RequestLine parseRequestLine(String line) throws IOException {
-        String[] tokens = line.split(" ");
-        if (tokens.length < 2) {
-            throw new IOException("Invalid HTTP Request Line: " + line);
+    private static String readLine(InputStream in) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        int b;
+        while ((b = in.read()) != -1) {
+            if (b == '\n') break; // \n을 만나면 종료
+            if (b != '\r') baos.write(b); // \r은 제외하고 저장
         }
+        if (b == -1 && baos.size() == 0) return null;
+        return baos.toString(StandardCharsets.UTF_8);
+    }
 
+    private static RequestLine parseRequestLine(String line) {
+        String[] tokens = line.split(" ");
         HttpMethod method = HttpMethod.valueOf(tokens[0]);
         String fullPath = tokens[1];
         String version = (tokens.length > 2) ? tokens[2] : "HTTP/1.1";
 
         String path = fullPath;
         Map<String, String> queryParams = new HashMap<>();
-
         if (fullPath.contains("?")) {
             String[] parts = fullPath.split("\\?");
             path = parts[0];
@@ -71,68 +80,28 @@ public class RequestParser {
         return new RequestLine(method, path, version, queryParams);
     }
 
-    private static Map<String, String> parseHeaders(BufferedReader br) throws IOException {
-        Map<String, String> headers = new HashMap<>();
-        String line;
-        while (true) {
-            line = br.readLine();
-            if (line == null || line.isEmpty()) {
-                break;
-            }
-            String[] pair = line.split(": ");
-            if (pair.length >= 2) {
-                headers.put(pair[0], pair[1]);
-            }
-        }
-        return headers;
-    }
-
-    private static Map<String, String> parseBody(BufferedReader br, Map<String, String> headers) throws IOException {
-        Map<String, String> bodyParams = new HashMap<>();
-        if (headers.containsKey("Content-Length")) {
-            int contentLength = Integer.parseInt(headers.get("Content-Length"));
-            char[] bodyChars = new char[contentLength];
-            br.read(bodyChars, 0, contentLength);
-            String body = new String(bodyChars);
-
-            if (!body.isEmpty()) {
-                logger.debug("Request Body: {}", body); // 원본 바디 데이터 로깅
-                bodyParams = parseQueryString(body);
-            }
-        } else if (headers.containsKey("Transfer-Encoding")) {
-            logger.warn("Transfer-Encoding detected without Content-Length. Chunked encoding not yet fully supported.");
-        }
-        return bodyParams;
-    }
-
     private static Map<String, String> parseQueryString(String queryString) {
         Map<String, String> params = new HashMap<>();
+        if (queryString == null || queryString.isEmpty()) return params;
         String[] pairs = queryString.split("&");
         for (String pair : pairs) {
             String[] tokens = pair.split("=");
-            if (tokens.length == 2) {
-                params.put(tokens[0], tokens[1]);
-            }
+            if (tokens.length == 2) params.put(tokens[0], tokens[1]);
         }
         return params;
     }
 
     private static Map<String, String> parseCookies(String cookieHeader) {
         Map<String, String> cookies = new HashMap<>();
-        if (cookieHeader == null || cookieHeader.isEmpty()) {
-            return cookies;
-        }
+        if (cookieHeader == null) return cookies;
         String[] pairs = cookieHeader.split(";");
         for (String pair : pairs) {
             String[] tokens = pair.trim().split("=");
-            if (tokens.length == 2) {
-                cookies.put(tokens[0], tokens[1]);
-            }
+            if (tokens.length == 2) cookies.put(tokens[0], tokens[1]);
         }
         return cookies;
     }
 
-    // 내부 데이터 전달용 객체
     private record RequestLine(HttpMethod method, String path, String version, Map<String, String> queryParams) {
     }
 }
