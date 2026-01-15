@@ -38,21 +38,25 @@
             </div>
             <img class="post__img" src="{{articleImage}}" alt="게시글 이미지"/>
 
-            <div class="post__menu">
+            <div class="post__menu" style="display: flex; justify-content: space-between; align-items: center;">
                 <ul style="display: flex; list-style: none; padding: 0; margin: 0; align-items: center;">
                     <li style="margin-right: 15px;">
                         <button class="post__menu__btn" style="display: flex; align-items: center; background: none; border: none; cursor: pointer; padding: 0;">
                             <img src="./img/like.svg" style="display: block;"/>
-                            <span style="font-size: 14px; margin-left: 5px; line-height: 1;">{{likeCount}}</span>
+                            <span style="font-size: 14px; margin-left: 5px; line-height: 1; pointer-events: none; user-select: none;">{{likeCount}}</span>
                         </button>
                     </li>
                     <li>
-                        <button class="post__menu__btn">
-                            <img src="./img/comment.svg"/>
+                        <button class="post__menu__btn" style="display: flex; align-items: center; background: none; border: none; cursor: pointer; padding: 0;">
+                            <img src="./img/comment.svg" style="display: block;"/>
+                            <span style="font-size: 14px; margin-left: 5px; line-height: 1; pointer-events: none; user-select: none;">{{commentCount}}</span>
                         </button>
                     </li>
                 </ul>
-                <button class="post__menu__btn"><img src="./img/bookMark.svg"/></button>
+
+                <button class="post__menu__btn" style="background: none; border: none; cursor: pointer; padding: 0; display: block;">
+                    <img src="./img/bookMark.svg" style="display: block;"/>
+                </button>
             </div>
             <p class="post__article">{{articleContent}}</p>
         </div>
