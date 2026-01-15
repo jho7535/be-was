@@ -199,4 +199,7 @@ gradle-app.setting
 # DB
 *.db
 
+# upload
+upload_images/
+
 # End of https://www.toptal.com/developers/gitignore/api/gradle,intellij,java,macos
