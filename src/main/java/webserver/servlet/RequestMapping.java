@@ -16,6 +16,7 @@ public class RequestMapping {
         controllers.put("/login", new LoginPageServlet());
         controllers.put("/registration", new RegistrationPageServlet());
         controllers.put("/article", new ArticlePageServlet());
+        controllers.put("/mypage", new MyPageServlet());
 
         controllers.put("/user/create", new UserCreateServlet());
         controllers.put("/user/login", new UserLoginServlet());
