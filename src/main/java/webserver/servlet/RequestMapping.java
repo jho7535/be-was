@@ -11,6 +11,7 @@ public class RequestMapping {
     static {
         controllers.put("/", new HomeServlet());
         controllers.put("/index.html", new HomeServlet());
+        controllers.put("/main", new HomeServlet());
 
         controllers.put("/login", new LoginPageServlet());
         controllers.put("/registration", new RegistrationPageServlet());
