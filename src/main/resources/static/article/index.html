@@ -25,21 +25,31 @@
       </header>
       <div class="page">
         <h2 class="page-title">게시글 작성</h2>
-        <form class="form" action="/article/create" method="post">
+        <form class="form" action="/article/create" method="post" enctype="multipart/form-data">
           <div class="textfield textfield_size_m">
             <p class="title_textfield">내용</p>
             <textarea
-              class="input_textfield"
-              name="content"
-              placeholder="글의 내용을 입력하세요"
-              autocomplete="username"
+                    class="input_textfield"
+                    name="content"
+                    placeholder="글의 내용을 입력하세요"
+                    required
             ></textarea>
           </div>
+          <div class="textfield" style="padding: 16px; margin-top: 16px; width: 680px; box-sizing: border-box;">
+            <p class="title_textfield" style="margin-bottom: 12px;">사진 첨부</p>
+            <input
+                    type="file"
+                    name="imageFile"
+                    accept="image/*"
+                    required
+                    style="font-size: 14px; color: #4b5966;"
+            />
+          </div>
           <button
-            id="registration-btn"
-            class="btn btn_contained btn_size_m"
-            style="margin-top: 24px"
-            type="submit"
+                  id="registration-btn"
+                  class="btn btn_contained btn_size_m"
+                  style="margin-top: 24px"
+                  type="submit"
           >
             작성 완료
           </button>
@@ -48,3 +58,4 @@
     </div>
   </body>
 </html>
+
