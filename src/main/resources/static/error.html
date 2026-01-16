@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="./reset.css" rel="stylesheet"/>
+    <link href="./global.css" rel="stylesheet"/>
+    <link href="./main.css" rel="stylesheet"/>
+    <style>
+        /* 에러 페이지 전용 스타일 추가 */
+        .error-container {
+            text-align: center;
+            padding: 100px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .error-code {
+            font-size: 80px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+            line-height: 1;
+        }
+
+        .error-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #222;
+        }
+
+        .error-message {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <a href="/"><img src="./img/signiture.svg"/></a>
+        <ul class="header__menu">
+        </ul>
+    </header>
+
+    <div class="wrapper">
+        <div class="error-container">
+            <h1 class="error-code">{{status}}</h1>
+            <h2 class="error-title">{{errorTitle}}</h2>
+
+            <p class="error-message">
+                {{#errorMessage}}{{errorMessage}}{{/errorMessage}}
+                {{^errorMessage}}요청을 처리하는 중에 문제가 발생했습니다.{{/errorMessage}}
+            </p>
+
+            <div class="error-actions">
+                <a href="/" class="btn btn_contained btn_size_m">홈으로 이동</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
