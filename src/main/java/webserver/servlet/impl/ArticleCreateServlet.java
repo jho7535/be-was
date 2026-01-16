@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import repository.ArticleRepository;
 import webserver.SessionManager;
+import webserver.excepiton.CommonException;
 import webserver.http.MultipartParser;
 import webserver.model.HttpRequest;
 import webserver.model.HttpResponse;
@@ -68,8 +69,9 @@ public class ArticleCreateServlet extends HttpServlet {
 
     private String saveImage(byte[] imageBytes, String originalFileName) {
         File directory = new File(SAVE_PATH);
-        if (!directory.exists()) directory.mkdirs();
-
+        if (!directory.exists() && !directory.mkdirs()) {
+            throw new CommonException(500, "서버 오류", "저장 디렉토리를 생성할 수 없습니다.");
+        }
         // 확장자 추출 안전하게 수정
         String extension = "";
         if (originalFileName != null && originalFileName.contains(".")) {
@@ -88,7 +90,7 @@ public class ArticleCreateServlet extends HttpServlet {
             return "/img/article/" + savedFileName;
         } catch (IOException e) {
             logger.error("Failed to save image file", e);
-            return null;
+            throw new CommonException(500, "서버 오류", "이미지 파일을 저장하는 중 오류가 발생했습니다.");
         }
     }
 }

@@ -1,5 +1,6 @@
 package webserver.servlet;
 
+import webserver.excepiton.CommonException;
 import webserver.model.HttpRequest;
 import webserver.model.HttpResponse;
 import webserver.model.ModelAndView;
@@ -10,23 +11,18 @@ public abstract class HttpServlet {
         return switch (request.method()) {
             case GET -> doGet(request, response);
             case POST -> doPost(request, response);
-            default -> {
-                response.setStatus(405, "Method Not Allowed");
-                response.setBody("<h1>405 Method Not Allowed</h1>".getBytes());
-                yield null;
-            }
+            default -> throw new CommonException(405, "Method Not Allowed",
+                    request.method() + " 방식의 요청은 지원하지 않습니다.");
         };
     }
 
     protected ModelAndView doGet(HttpRequest request, HttpResponse response) {
-        response.setStatus(405, "Method Not Allowed");
-        response.setBody("<h1>405 Method Not Allowed</h1>".getBytes());
-        return null;
+        throw new CommonException(405, "Method Not Allowed",
+                "이 경로는 GET 요청을 지원하지 않습니다.");
     }
 
     protected ModelAndView doPost(HttpRequest request, HttpResponse response) {
-        response.setStatus(405, "Method Not Allowed");
-        response.setBody("<h1>405 Method Not Allowed</h1>".getBytes());
-        return null;
+        throw new CommonException(405, "Method Not Allowed",
+                "이 경로는 POST 요청을 지원하지 않습니다.");
     }
 }
