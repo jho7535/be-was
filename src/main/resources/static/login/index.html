@@ -11,19 +11,6 @@
       <header class="header">
         <a href="/"><img src="../img/signiture.svg" /></a>
         <ul class="header__menu">
-          {{#isLoggedIn}}
-          <li class="header__menu__item">
-            <a class="btn btn_ghost btn_size_s" href="/mypage">{{userName}}님</a>
-          </li>
-          <li class="header__menu__item">
-            <form action="/user/logout" method="POST" style="display: inline;">
-              <button type="submit" class="btn btn_ghost btn_size_s" style="cursor: pointer;">
-                로그아웃
-              </button>
-            </form>
-          </li>
-          {{/isLoggedIn}}
-          {{^isLoggedIn}}
           <li class="header__menu__item">
             <a class="btn btn_contained btn_size_s" href="/login">로그인</a>
           </li>
@@ -32,7 +19,6 @@
               회원 가입
             </a>
           </li>
-          {{/isLoggedIn}}
         </ul>
       </header>
       <div class="page">
